@@ -79,7 +79,8 @@ class TrivialBubbleServer{
 }
 
 function sendResponse(c, r, responseTxn){
-  console.trace(c.connection.remoteAddress+"\tresponse "+responseTxn);
+  const logPostfix = responseTxn.length > 1024 ? "... (>1kb truncated)" : '';
+  console.trace(c.connection.remoteAddress+"\tresponse "+responseTxn.substring(0, 1024) + logPostfix);
   r.setHeader('Access-Control-Allow-Origin', '*');
   r.setHeader('Access-Control-Allow-Headers', '*');
   r.writeHead(200);
