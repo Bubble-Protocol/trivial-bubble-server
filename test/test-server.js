@@ -2,10 +2,6 @@
  * Trivial Bubble Server tests
  * 
  * run 'npm test' or 'npm run test-cov' from the project's root directory.
- * 
- * Requires Ganache to be running at the host and port specified in config.json.
- * Ganache must be configured to use the following private key mnemonic:
- *   foil message analyst universe oval sport super eye spot easily veteran oblige
 */
 
 const CONFIG = require('../config.json');
@@ -17,12 +13,50 @@ const datona = require('datona-lib');
 const BubbleServer = require('../src/server.js').TrivialBubbleServer;
 const sdac = require("../node_modules/datona-lib/contracts/TestContract.json");
 const fs = require('fs');
+const express = require('express');
+const bodyParser = require('body-parser');
+const ganacheCore = require('ganache-core');
+
 require('../src/log.js');
 // console.enable("trace");
 // console.enable("debug");
 
 describe("Server", function() {
 
+  class GanacheServer {
+
+    constructor(mnemonic, port) {
+      const app = express();
+      app.use(bodyParser.json());
+      
+      const provider = ganacheCore.provider({
+        mnemonic: mnemonic
+      });
+      
+      app.post('/', (req, res) => {
+        provider.sendAsync(req.body, (err, result) => {
+          if (err) {
+            return res.status(500).json(err);
+          }
+          res.json(result);
+        });
+      });
+      
+      this.server = app.listen(port, () => {
+        console.trace(`Ganache listening on port ${port}`);
+      });
+
+    }
+
+    close() {
+      this.server.close();
+      console.trace("Ganache server closed");
+    }
+  }
+
+  const GANACHE_MNEMONIC = 'foil message analyst universe oval sport super eye spot easily veteran oblige';
+  const GANACHE_PORT = 8545;
+  
   const owner = { // taken from Ganache
     privateKey: "24802edc1eba0f578dcffd6ada3c5b954a8e76e55ba830cf19a3083d489a6063",
     address: "0xc16a409a39EDe3F38E212900f8d3afe6aa6A8929"
@@ -43,6 +77,7 @@ describe("Server", function() {
 
   // Server config
   var server;
+  var ganache;
   const portNumber = 8964;
   const bubblePath = "./test-bubbles";
   const serverScheme = "http";
@@ -65,10 +100,11 @@ describe("Server", function() {
   const file6 = "0x0000000000000000000000000000000000000006";
 
 
-  before( function() {
+  before( async function() {
     if (!fs.existsSync(bubblePath)) fs.mkdirSync(bubblePath);
     datona.blockchain.setProvider(CONFIG.blockchainURL, CONFIG.blockchain);
     server = new BubbleServer(portNumber, "./test-bubbles", vaultKey, false);
+    ganache = new GanacheServer(GANACHE_MNEMONIC, GANACHE_PORT);
   });
 
 
@@ -357,6 +393,7 @@ describe("Server", function() {
   });
 
   after( function(){
+    ganache.close();
     server.close();
     fs.rmSync(bubblePath, { recursive: true, force: true });
   });
