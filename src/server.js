@@ -2,89 +2,73 @@
  * Copyright (c) 2023 Bubble Protocol
  * Distributed under the MIT software license, see the accompanying file COPYING or 
  * http://www.opensource.org/licenses/mit-license.php.
- *
- * Trivial Bubble Server
- *
- * Stores bubbles on the local file system in the path specified in config.json.  Bubble files are 
- * named after their smart contract address.
  */
-
-const datona = require("datona-lib");
-const TrivialVaultDataManager = require("./vaultDataManager").TrivialVaultDataManager;
-const fs = require('fs');
 
 
 // Constants
-const version = "0.0.1";
+const version = "0.1.1";
 
-/**
- * Server
- */
-class TrivialBubbleServer{
+import express from 'express';
+import jayson from 'jayson';
+import jsonParser from 'body-parser';
+import { Guardian } from '@bubble-protocol/server';
+import { TrivialDataServer } from './TrivialDataServer';
 
-  constructor(portNumber, bubblePath, key, https = true){
-    console.log("Trivial Bubble Server v" + version);
-    console.log("Bubble Protocol v" + datona.protocolVersion);
-    this.key = key;
-    const vaultManager = new TrivialVaultDataManager(bubblePath);
-    this.vaultKeeper = new datona.vault.VaultKeeper(vaultManager, this.key);
-    var serverFactory = https ? require('https') : require('http');
-    var privateKey  = https ? fs.readFileSync('~/.ssl/ssl.key', 'utf8') : null;
-    var certificate = https ? fs.readFileSync('~/.ssl/ssl.cer', 'utf8') : null;
-    var credentials = {key: privateKey, cert: certificate};
-    this.server = serverFactory.createServer(credentials, this.connection.bind(this));
-    this.server.listen(portNumber);
+export class BubbleServer {
 
-    this.server.on('error', (err) => {
-      console.error("server error: " + err)
-    });
-
-    console.log('Listening on port ' + portNumber + " over " + (https ? "HTTPS" : "HTTP"));
-  }
+  constructor(port, rootPath, blockchainProvider) {
+    console.log('Bubble Server v'+version);
+    this.port = port;
+    this.dataServer = new TrivialDataServer(rootPath);
+    this.guardian = new Guardian(this.dataServer, blockchainProvider);
+    const guardian = this.guardian;
 
 
-  connection(request, response){
-    console.trace(request.connection.remoteAddress+'\tconnected');
+    function post(method, params, callback) {
+      guardian.post(method, params)
+        .then(response => {
+          callback(null, response);
+        })
+        .catch(error => {
+          if (!error.code) console.log(error);
+          callback({code: error.code, message: error.message, cause: error.cause});
+        })
+    }
 
-    var data = "";
-    const key = this.key;
 
-    request.on('data', (chunk) => { data += chunk.toString() });
+    this.methods = {
+      ping: (_, callback) => { callback(null, 'pong') },
+      create: (params, callback) => { post('create', params, callback) },
+      write:  (params, callback) => { post('write', params, callback) },
+      append:  (params, callback) => { post('append', params, callback) },
+      read:  (params, callback) => { post('read', params, callback) },
+      delete:  (params, callback) => { post('delete', params, callback) },
+      mkdir:  (params, callback) => { post('mkdir', params, callback) },
+      list:  (params, callback) => { post('list', params, callback) },
+      getPermissions:  (params, callback) => { post('getPermissions', params, callback) },
+      terminate:  (params, callback) => { post('terminate', params, callback) },
+    };
 
-    request.on('end', () => {
-      if (data.length === 0) {
-        console.error(request.connection.remoteAddress+"\tno data");
-        const txn = datona.comms.createErrorResponse(new datona.errors.TransactionError("Transaction has no data"), "VaultResponse");
-        sendResponse(request, response, datona.comms.encodeTransaction(txn, key));
-      }
-      else {
-        const logPostfix = data.length > 1024 ? "... (>1kb truncated)" : '';
-        console.trace(request.connection.remoteAddress+"\ttransaction "+data.substring(0, 1024) + logPostfix);
-        this.vaultKeeper.handleSignedRequest(data)
-          .then( function(responseTxn){ sendResponse(request, response, responseTxn); }  )
-          .catch( console.error ); // should never happen
-      }
-    });
+    
+    const rpcServer = new jayson.Server(this.methods);
 
-    request.on('close', () => {
-      console.trace(request.connection.remoteAddress+'\tdisconnected');
-    });
+    this.httpServer = express();
+    this.httpServer.use(jsonParser.json());
+    this.httpServer.use(rpcServer.middleware());
 
   }
 
-  close(){
-    datona.blockchain.close();
-    this.server.close(() => { console.log("Server shutdown"); })
+  start() {
+    return new Promise((resolve, reject) => {
+      this.server = this.httpServer.listen(this.port, error => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
   }
+
+  close(callback) {
+    this.server.close(callback);
+  }
+
 }
-
-function sendResponse(c, r, responseTxn){
-  const logPostfix = responseTxn.length > 1024 ? "... (>1kb truncated)" : '';
-  console.trace(c.connection.remoteAddress+"\tresponse "+responseTxn.substring(0, 1024) + logPostfix);
-  r.setHeader('Access-Control-Allow-Origin', '*');
-  r.setHeader('Access-Control-Allow-Headers', '*');
-  r.writeHead(200);
-  r.end(responseTxn);
-}
-
-module.exports.TrivialBubbleServer = TrivialBubbleServer;

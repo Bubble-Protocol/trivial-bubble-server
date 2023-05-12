@@ -4,24 +4,22 @@
  * http://www.opensource.org/licenses/mit-license.php.
  */
 
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const CONFIG = require('../config.json');
-const TrivialBubbleServer = require('./server.js').TrivialBubbleServer;
-const datona = require('datona-lib');
+import { blockchainProviders } from '@bubble-protocol/core';
+import { BubbleServer } from "./server.js";
 
-require('./log.js');
-console.enable("timestamp");
-if (CONFIG.traceOn) console.enable("trace");
-if (CONFIG.debugOn) console.enable("debug");
-console.trace("Trace enabled");
-console.debug("Debug enabled")
+console.trace = CONFIG.traceOn ? Function.prototype.bind.call(console.info, console, "[trace]") : function() {};
+console.debug = CONFIG.debugOn ? Function.prototype.bind.call(console.info, console, "[debug]") : function() {};
+
 
 main();
 
 async function main() {
   try {
-    datona.blockchain.setProvider(CONFIG.blockchainURL, CONFIG.blockchain);
-    const key = new datona.crypto.Key(CONFIG.privateKey);
-    const server = new TrivialBubbleServer(CONFIG.portNumber, CONFIG.bubblePath, key, CONFIG.https);
+    const blockchainProvider = new blockchainProviders.Web3Provider(CONFIG.web3Url);
+    const server = new BubbleServer(CONFIG.portNumber, CONFIG.bubblePath, blockchainProvider, CONFIG.https);
 
     process.on('SIGTERM', () => {
       server.close();
