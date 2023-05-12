@@ -1,5 +1,5 @@
 import { BubbleError, ErrorCodes } from '@bubble-protocol/core';
-import { ROOT_PATH } from '@bubble-protocol/core/src';
+import { ROOT_PATH } from '@bubble-protocol/core/src/index.js';
 import { DataServer } from '@bubble-protocol/server';
 import * as fs from 'node:fs/promises';
 

@@ -1,8 +1,9 @@
 {
   "portNumber": 8131,
-  "https": true,
+  "chainId": 84531,
+  "https": false,
   "bubblePath": "./bubbles",
   "web3Url": "<YOUR_PROVIDER>",
   "debugOn": false,
-  "traceOn": false
+  "traceOn": true
 }

@@ -12,7 +12,7 @@ import express from 'express';
 import jayson from 'jayson';
 import jsonParser from 'body-parser';
 import { Guardian } from '@bubble-protocol/server';
-import { TrivialDataServer } from './TrivialDataServer';
+import { TrivialDataServer } from './TrivialDataServer.js';
 
 export class BubbleServer {
 
