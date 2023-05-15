@@ -4,65 +4,45 @@
  * http://www.opensource.org/licenses/mit-license.php.
  */
 
-
-// Constants
-const version = "0.1.1";
-
 import express from 'express';
 import jayson from 'jayson';
 import jsonParser from 'body-parser';
-import { Guardian } from '@bubble-protocol/server';
-import { TrivialDataServer } from './TrivialDataServer.js';
+import http from 'http';
+import https from 'https';
+import { RPCv2 } from './v2/rpc-server.js';
+import fs from 'fs';
 
 export class BubbleServer {
 
-  constructor(port, rootPath, blockchainProvider) {
-    console.log('Bubble Server v'+version);
-    this.port = port;
-    this.dataServer = new TrivialDataServer(rootPath);
-    this.guardian = new Guardian(this.dataServer, blockchainProvider);
-    const guardian = this.guardian;
+  constructor(CONFIG) {
 
+    console.log('Bubble Server v'+CONFIG.version);
 
-    function post(method, params, callback) {
-      guardian.post(method, params)
-        .then(response => {
-          callback(null, response);
-        })
-        .catch(error => {
-          if (!error.code) console.log(error);
-          callback({code: error.code, message: error.message, cause: error.cause});
-        })
+    this.port = CONFIG.port;
+
+    const framework = express();
+    framework.use(jsonParser.json());
+    framework.post('/v2', jayson.server(RPCv2(CONFIG.v2)).middleware());
+
+    if (CONFIG.https && CONFIG.https.active) {
+      const privateKey  = fs.readFileSync(CONFIG.https.key, 'utf8');
+      const certificate = fs.readFileSync(CONFIG.https.cer, 'utf8');
+      const credentials = {key: privateKey, cert: certificate};
+      this.app = https.createServer(credentials, framework);
+      this.type = 'https';
     }
-
-
-    this.methods = {
-      ping: (_, callback) => { callback(null, 'pong') },
-      create: (params, callback) => { post('create', params, callback) },
-      write:  (params, callback) => { post('write', params, callback) },
-      append:  (params, callback) => { post('append', params, callback) },
-      read:  (params, callback) => { post('read', params, callback) },
-      delete:  (params, callback) => { post('delete', params, callback) },
-      mkdir:  (params, callback) => { post('mkdir', params, callback) },
-      list:  (params, callback) => { post('list', params, callback) },
-      getPermissions:  (params, callback) => { post('getPermissions', params, callback) },
-      terminate:  (params, callback) => { post('terminate', params, callback) },
-    };
-
-    
-    const rpcServer = new jayson.Server(this.methods);
-
-    this.httpServer = express();
-    this.httpServer.use(jsonParser.json());
-    this.httpServer.use(rpcServer.middleware());
+    else {
+      this.app = http.createServer(framework);
+      this.type = 'http';
+    }
 
   }
 
   start() {
     return new Promise((resolve, reject) => {
-      this.server = this.httpServer.listen(this.port, error => {
+      this.server = this.app.listen(this.port, error => {
         if (error) reject(error);
-        else resolve();
+        else resolve({port: this.port, type: this.type});
       });
     });
   }

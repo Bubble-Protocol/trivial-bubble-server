@@ -1,9 +1,16 @@
 {
-  "portNumber": 8131,
-  "chainId": 84531,
-  "https": false,
-  "bubblePath": "./bubbles",
-  "web3Url": "<YOUR_PROVIDER>",
+  "version": "0.1.1",
+  "port": 8131,
+  "https": {
+    "active": true,
+    "key": "<PATH_TO_PRIVATE_KEY>",
+    "cer": "<PATH_TO_CERTIFICATE>"
+  },
   "debugOn": false,
-  "traceOn": true
+  "traceOn": true,
+  "v2": {
+    "chainId": 84531,
+    "rootPath": "./bubbles",
+    "web3Url": "<YOUR_PROVIDER>"
+  }
 }

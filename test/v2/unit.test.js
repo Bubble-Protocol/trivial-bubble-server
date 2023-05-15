@@ -6,10 +6,10 @@
 
 import * as fs from 'node:fs/promises';
 import { testDataServerRequirements } from '@bubble-protocol/server/test/DataServerTestSuite/requirementsTests.js';
-import { TrivialDataServer } from '../src/TrivialDataServer.js';
+import { TrivialDataServer } from '../../src/v2/TrivialDataServer.js';
 import { UnitTestPoint } from './UnitTestPoint.js';
 
-describe("TrivialDataServer Unit Tests", function() {
+describe("v2 TrivialDataServer Unit Tests", function() {
 
   //
   // Config

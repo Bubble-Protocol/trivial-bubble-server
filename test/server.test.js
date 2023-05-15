@@ -7,10 +7,9 @@
 import Web3 from 'web3';
 import { BubbleServer } from '../src/server.js';
 import { blockchainProviders } from '@bubble-protocol/bubble-sdk';
-import { bubbleProviders } from '@bubble-protocol/bubble-sdk';
 import { startBlockchain, stopBlockchain } from '@bubble-protocol/bubble-sdk/test/mockups/test-blockchain.js';
 import * as fs from 'node:fs/promises';
-import { testBubbleServerRequirements } from '@bubble-protocol/server/test/BubbleServerTestSuite/requirementsTests.js';
+import { v2ServerTests } from './v2/v2-server-tests.js';
 
 describe("Server", function() {
 
@@ -22,6 +21,7 @@ describe("Server", function() {
   const SERVER_PORT = 8546;
   const BUBBLE_SERVER_URL = 'http://127.0.0.1:'+SERVER_PORT;
   const SERVER_BUBBLE_PATH = "./test-bubbles";
+  const V2_SERVER_BUBBLE_PATH = SERVER_BUBBLE_PATH+'/v2';
 
   // Blockchain Server
   const CHAIN_ID = 1;
@@ -33,10 +33,23 @@ describe("Server", function() {
   // Web3 provider
   const web3 = new Web3(BLOCKCHAIN_SERVER_URL);
 
-  // Bubble provider
-  const bubbleProvider = new bubbleProviders.HTTPBubbleProvider(new URL(BUBBLE_SERVER_URL));
+  // Server Config
+  const BUBBLE_SERVER_CONFIG = {
+    version: '1',
+    port: SERVER_PORT,
+    https: {
+      active: false,
+      key: '',
+      cer: ''
+    },
+    v2: {
+      chainId: CHAIN_ID,
+      rootPath: V2_SERVER_BUBBLE_PATH,
+      web3Url: BLOCKCHAIN_SERVER_URL
+    }
+  }
 
-  
+
   //
   // Global vars
   //
@@ -49,11 +62,15 @@ describe("Server", function() {
   //
  
   beforeAll( async () => {
-    await fs.mkdir(SERVER_BUBBLE_PATH);
+    await fs.mkdir(SERVER_BUBBLE_PATH, {recursive: true});
     const blockchainProvider = new blockchainProviders.Web3Provider(CHAIN_ID, web3, CONTRACT_ABI_VERSION);
-    testBubbleServer = new BubbleServer(SERVER_PORT, SERVER_BUBBLE_PATH, blockchainProvider, true);
+    testBubbleServer = new BubbleServer(BUBBLE_SERVER_CONFIG);
     return startBlockchain(GANACHE_PORT, {mnemonic: GANACHE_MNEMONIC})
-      .then(testBubbleServer.start.bind(testBubbleServer));
+      .then(testBubbleServer.start.bind(testBubbleServer))
+      .then(status => {
+        expect(status.port).toBe(SERVER_PORT);
+        expect(status.type).toBe('http');
+      })
     }, 20000);
 
 
@@ -64,6 +81,6 @@ describe("Server", function() {
   }, 20000);
 
 
-  testBubbleServerRequirements(web3, CHAIN_ID, BUBBLE_SERVER_URL, bubbleProvider);
+  v2ServerTests(web3, BUBBLE_SERVER_URL, BUBBLE_SERVER_CONFIG.v2);
 
 });

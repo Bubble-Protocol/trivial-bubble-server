@@ -19,9 +19,7 @@ main();
 
 async function main() {
   try {
-    const web3 = new Web3(CONFIG.web3Url);
-    const blockchainProvider = new blockchainProviders.Web3Provider(CONFIG.chainId, web3, '0.0.2');
-    const server = new BubbleServer(CONFIG.portNumber, CONFIG.bubblePath, blockchainProvider, CONFIG.https);
+    const server = new BubbleServer(CONFIG);
 
     process.on('SIGTERM', () => {
       server.close();
@@ -31,7 +29,11 @@ async function main() {
       server.close();
     });
 
-    server.start();
+    server.start()
+      .then(status => {
+        console.log(status.type, 'server running on port', status.port);
+      })
+      .catch(console.error);
 
   } catch (err) {
     console.error("fatal error: " + err);
