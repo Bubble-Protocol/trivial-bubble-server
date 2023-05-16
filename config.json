@@ -1,8 +1,8 @@
 {
   "version": "0.1.1",
-  "port": 8131,
+  "port": 3000,
   "https": {
-    "active": true,
+    "active": false,
     "key": "<PATH_TO_PRIVATE_KEY>",
     "cer": "<PATH_TO_CERTIFICATE>"
   },
