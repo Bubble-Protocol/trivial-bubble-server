@@ -7,9 +7,7 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const CONFIG = require('../config.json');
-import { blockchainProviders } from '@bubble-protocol/core';
 import { BubbleServer } from "./server.js";
-import Web3 from 'web3';
 
 console.trace = CONFIG.traceOn ? Function.prototype.bind.call(console.info, console, "[trace]") : function() {};
 console.debug = CONFIG.debugOn ? Function.prototype.bind.call(console.info, console, "[debug]") : function() {};
