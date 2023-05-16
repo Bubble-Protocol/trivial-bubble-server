@@ -8,11 +8,13 @@ Clone this repository to deploy your own Bubble server.
 
 This simple implementation stores bubbles as directories on the server's local file system.  Security of those bubbles depends on both the security of the server and on the encryption strategy of each bubble owner.
 
+Supports multiple endpoints for hosting multiple chains.
+
 Requires access to an EVM-compatible blockchain via either a Web3 api service such as [Infura](https://www.infura.io/), a local blockchain node or a local [Ganache](https://trufflesuite.com/ganache/) instance.  See Configuration.
 
 ## Configuration
 
-Use `config.json` to specify the server's port number, chain id, url of the blockchain api and the bubble storage directory.
+Use `config.json` to specify the server port and each chain's chain id, blockchain api, endpoint and bubble storage directory.
 
 ## Usage
 ```

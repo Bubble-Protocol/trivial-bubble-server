@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "port": 3000,
   "https": {
     "active": false,
@@ -9,8 +9,37 @@
   "debugOn": false,
   "traceOn": true,
   "v2": {
-    "chainId": 84531,
-    "rootPath": "./bubbles",
-    "web3Url": "<YOUR_PROVIDER>"
+    "chains": [
+      {
+        "endpoint": "base-goerli",
+        "chainId": 84531,
+        "rootPath": "./bubbles/v2/base-goerli",
+        "web3Url": "<YOUR_PROVIDER_URL>"
+      },
+      {
+        "endpoint": "ethereum",
+        "chainId": 1,
+        "rootPath": "./bubbles/v2/ethereum",
+        "web3Url": "<YOUR_PROVIDER_URL>"
+      },
+      {
+        "endpoint": "polygon",
+        "chainId": 137,
+        "rootPath": "./bubbles/v2/polygon",
+        "web3Url": "<YOUR_PROVIDER_URL>"
+      },
+      {
+        "endpoint": "avalanche",
+        "chainId": 43114,
+        "rootPath": "./bubbles/v2/avalanche",
+        "web3Url": "<YOUR_PROVIDER_URL>"
+      },
+      {
+        "endpoint": "sepolia",
+        "chainId": 11155111,
+        "rootPath": "./bubbles/v2/sepolia",
+        "web3Url": "<YOUR_PROVIDER_URL>"
+      }
+    ]
   }
 }
