@@ -22,7 +22,10 @@ export class BubbleServer {
 
     const framework = express();
     framework.use(jsonParser.json());
-    framework.post('/v2', jayson.server(RPCv2(CONFIG.v2)).middleware());
+
+    CONFIG.v2.chains.forEach(chain => {
+      framework.post('/v2/'+chain.endpoint, jayson.server(RPCv2(chain)).middleware());
+    })
 
     if (CONFIG.https && CONFIG.https.active) {
       const privateKey  = fs.readFileSync(CONFIG.https.key, 'utf8');
