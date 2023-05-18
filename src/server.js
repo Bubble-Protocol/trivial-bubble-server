@@ -21,7 +21,7 @@ export class BubbleServer {
     this.port = CONFIG.port;
 
     const framework = express();
-    framework.use(jsonParser.json());
+    framework.use(jsonParser.json({limit: '50mb'}));
 
     CONFIG.v2.chains.forEach(chain => {
       framework.post('/v2/'+chain.endpoint, jayson.server(RPCv2(chain)).middleware());
