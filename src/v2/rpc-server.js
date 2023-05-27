@@ -8,7 +8,7 @@ export function RPCv2(CONFIG) {
   const web3 = new Web3(CONFIG.web3Url);
   const blockchainProvider = new blockchainProviders.Web3Provider(CONFIG.chainId, web3, '0.0.2');
 
-  const guardian = new Guardian(new TrivialDataServer(CONFIG.rootPath), blockchainProvider);
+  const guardian = new Guardian(new TrivialDataServer(CONFIG.rootPath), blockchainProvider, CONFIG.url);
 
   function post(method, params, callback) {
     guardian.post(method, params)
