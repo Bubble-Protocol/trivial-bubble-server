@@ -6,8 +6,7 @@
 
 import Web3 from 'web3';
 import { BubbleServer } from '../src/server.js';
-import { blockchainProviders } from '@bubble-protocol/bubble-sdk';
-import { startBlockchain, stopBlockchain } from '@bubble-protocol/bubble-sdk/test/mockups/test-blockchain.js';
+import { GanacheServer } from "./GanacheServer.js";
 import * as fs from 'node:fs/promises';
 import { v2ServerTests } from './v2/v2-server-tests.js';
 
@@ -25,7 +24,6 @@ describe("Server", function() {
 
   // Blockchain Server
   const CHAIN_ID = 1;
-  const CONTRACT_ABI_VERSION = '0.0.2';
   const GANACHE_MNEMONIC = 'foil message analyst universe oval sport super eye spot easily veteran oblige';
   const GANACHE_PORT = 8545;
   const BLOCKCHAIN_SERVER_URL = 'http://127.0.0.1:'+GANACHE_PORT;
@@ -43,9 +41,15 @@ describe("Server", function() {
       cer: ''
     },
     v2: {
-      chainId: CHAIN_ID,
-      rootPath: V2_SERVER_BUBBLE_PATH,
-      web3Url: BLOCKCHAIN_SERVER_URL
+      "chains": [
+        {
+          endpoint: "ethereum",
+          url: BLOCKCHAIN_SERVER_URL,
+          chainId: CHAIN_ID,
+          rootPath: V2_SERVER_BUBBLE_PATH,
+          web3Url: BLOCKCHAIN_SERVER_URL
+        }
+      ]
     }
   }
 
@@ -58,12 +62,27 @@ describe("Server", function() {
 
 
   //
+  // Blockchain Server
+  //
+
+  var ganacheServer;
+
+  function startBlockchain(port, options) {
+    ganacheServer = new GanacheServer(port, options);
+    return ganacheServer.start();
+  }
+
+  function stopBlockchain() {
+    return new Promise(resolve => ganacheServer.close(resolve));
+  }
+
+
+  //
   // Tests
   //
  
   beforeAll( async () => {
     await fs.mkdir(SERVER_BUBBLE_PATH, {recursive: true});
-    const blockchainProvider = new blockchainProviders.Web3Provider(CHAIN_ID, web3, CONTRACT_ABI_VERSION);
     testBubbleServer = new BubbleServer(BUBBLE_SERVER_CONFIG);
     return startBlockchain(GANACHE_PORT, {mnemonic: GANACHE_MNEMONIC})
       .then(testBubbleServer.start.bind(testBubbleServer))
@@ -80,7 +99,9 @@ describe("Server", function() {
     await fs.rmdir(SERVER_BUBBLE_PATH, {recursive: true, force: true});
   }, 20000);
 
-
-  v2ServerTests(web3, BUBBLE_SERVER_URL, BUBBLE_SERVER_CONFIG.v2);
+  
+  const chain = BUBBLE_SERVER_CONFIG.v2.chains[0];
+  const serverURL = BUBBLE_SERVER_URL+'/v2/'+chain.endpoint;
+  v2ServerTests(web3, serverURL, chain);
 
 });

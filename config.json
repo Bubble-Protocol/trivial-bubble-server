@@ -12,35 +12,35 @@
     "chains": [
       {
         "endpoint": "base-goerli",
-	"url": "<YOUR_ENDPOINT_URL>",
+	      "url": "<YOUR_ENDPOINT_URL>",
         "chainId": 84531,
         "rootPath": "./bubbles/base-goerli",
         "web3Url": "<YOUR_WEB3_PROVIDER_URL>"
       },
       {
         "endpoint": "ethereum",
-	"url": "<YOUR_ENDPOINT_URL>",
+	      "url": "<YOUR_ENDPOINT_URL>",
         "chainId": 1,
         "rootPath": "./bubbles/ethereum",
         "web3Url": "<YOUR_WEB3_PROVIDER_URL>"
       },
       {
         "endpoint": "polygon",
-	"url": "<YOUR_ENDPOINT_URL>",
+	      "url": "<YOUR_ENDPOINT_URL>",
         "chainId": 137,
         "rootPath": "./bubbles/polygon",
         "web3Url": "<YOUR_WEB3_PROVIDER_URL>"
       },
       {
         "endpoint": "avalanche",
-	"url": "<YOUR_ENDPOINT_URL>",
+	      "url": "<YOUR_ENDPOINT_URL>",
         "chainId": 43114,
         "rootPath": "./bubbles/avalanche",
         "web3Url": "<YOUR_WEB3_PROVIDER_URL>"
       },
       {
         "endpoint": "sepolia",
-	"url": "<YOUR_ENDPOINT_URL>",
+	      "url": "<YOUR_ENDPOINT_URL>",
         "chainId": 11155111,
         "rootPath": "./bubbles/sepolia",
         "web3Url": "<YOUR_WEB3_PROVIDER_URL>"

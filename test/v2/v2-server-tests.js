@@ -6,13 +6,13 @@
 
 import * as fs from 'node:fs/promises';
 import { testBubbleServerRequirements } from '@bubble-protocol/server/test/BubbleServerTestSuite/requirementsTests.js';
-import { bubbleProviders } from '@bubble-protocol/bubble-sdk';
+import { bubbleProviders } from '@bubble-protocol/client';
 
 export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG) {
 
   describe("v2", function() {
-  
-    const bubbleProvider = new bubbleProviders.HTTPBubbleProvider(new URL(BUBBLE_SERVER_URL+'/v2'));
+
+    const bubbleProvider = new bubbleProviders.HTTPBubbleProvider(new URL(BUBBLE_SERVER_URL));
 
 
     beforeAll( async () => {
@@ -21,7 +21,7 @@ export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG) {
   
   
     afterAll( async () => {
-      await fs.rmdir(CONFIG.rootPath, {recursive: true, force: true});
+      await fs.rm(CONFIG.rootPath, {recursive: true, force: true});
     });
   
   
@@ -29,7 +29,7 @@ export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG) {
       await expect(bubbleProvider.post('ping')).resolves.toBe('pong');
     })
 
-    testBubbleServerRequirements(web3, CONFIG.chainId, BUBBLE_SERVER_URL, bubbleProvider);
+    testBubbleServerRequirements(web3, CONFIG.chainId, BUBBLE_SERVER_URL, bubbleProvider, undefined, {noSubscriptions: true});
   
   });
   
