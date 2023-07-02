@@ -1,4 +1,4 @@
-import { BubbleError, ErrorCodes } from '@bubble-protocol/core';
+import { BubbleError, BubbleFilename, ErrorCodes } from '@bubble-protocol/core';
 import { ROOT_PATH } from '@bubble-protocol/core/src/index.js';
 import { DataServer } from '@bubble-protocol/server';
 import * as fs from 'node:fs/promises';
@@ -16,6 +16,7 @@ export class TrivialDataServer extends DataServer {
   constructor(rootPath) {
     super();
     this.rootPath = rootPath.slice(-1) === '/' ? rootPath : rootPath + '/';
+    this.subscriptions = [];
   }
 
   create(contract, options={}) {
@@ -39,6 +40,9 @@ export class TrivialDataServer extends DataServer {
       const path = bubblePath+'/'+file;
       return fs.mkdir(dirname(path), {recursive: true})
       .then(() => fs.writeFile(path, data))
+      .then(() => {
+        this._notifySubscribers(path, contract, file, 'write', data);
+      })
       .catch(err => {
         throw new BubbleError(INTERNAL_ERROR, "failed to write file - try again later", {cause: err.message || err});
       });
@@ -53,6 +57,9 @@ export class TrivialDataServer extends DataServer {
       const path = bubblePath+'/'+file;
         return fs.mkdir(dirname(path), {recursive: true})
         .then(() => fs.appendFile(path, data))
+        .then(() => {
+          this._notifySubscribers(path, contract, file, 'append', data);
+        })
         .catch(err => {
           throw new BubbleError(INTERNAL_ERROR, "failed to append file - try again later", {cause: err.message || err});
         });
@@ -85,7 +92,12 @@ export class TrivialDataServer extends DataServer {
     .then(() => {
       const path = bubblePath+'/'+file;
       return fs.stat(path)
-      .then(stats => fs.rm(path, {recursive: stats.isDirectory()}))
+      .then(stats => {
+        return fs.rm(path, {recursive: stats.isDirectory()})
+          .then(() => {
+            this._notifySubscribers(path, contract, file, 'delete', undefined, stats.isDirectory() ? 'dir' : 'file');
+          })
+      })
       .catch(err => {
         if (err.code === 'ENOENT') {
           if (options.silent) return undefined;
@@ -109,7 +121,8 @@ export class TrivialDataServer extends DataServer {
         }
         else throw new BubbleError(INTERNAL_ERROR, "failed to make directory - try again later", {cause: err.message || err});
       });
-    });
+    })
+    .then(() => { this._notifySubscribers(bubblePath+'/'+file, contract, file, 'mkdir') })
   }
 
 
@@ -142,6 +155,36 @@ export class TrivialDataServer extends DataServer {
     });
   }
 
+  subscribe(contract, file, listener, options={}) {
+    const bubblePath = this.rootPath+contract;
+    const isRoot = file === ROOT_PATH;
+    const path = isRoot ? bubblePath : bubblePath+'/'+file
+    return assertBubbleExists(bubblePath)
+      .then(() => {
+        return getFileStats(path, file);
+      })
+      .then(stats => {
+        this.subscriptions.push({contract, file, listener, options});
+        const id = this.subscriptions.length-1;
+        if (stats.type) {
+          if (options.list === true) return this.list(contract, file, {long: true}).then(list => { return {subscriptionId: id, file: stats, data: list} });
+          if (options.since) return this.list(contract, file, {long: true, after: options.since}).then(list => { return {subscriptionId: id, file: stats, data: list} });
+          if (options.read) return this.read(contract, file).then(data => { return {subscriptionId: id, file: stats, data: data} });
+        }
+        return {subscriptionId: id, file: stats};
+      })
+  }
+
+  unsubscribe(subscriptionId) {
+    if (typeof subscriptionId === 'number' && subscriptionId >= 0 && subscriptionId < this.subscriptions.length) this.subscriptions[subscriptionId] = {};
+    return Promise.resolve();
+  }
+
+  unsubscribeClient(subs) {
+    subs.forEach(subscriptionId => {
+      if (typeof subscriptionId === 'number' && subscriptionId >= 0 && subscriptionId < this.subscriptions.length) this.subscriptions[subscriptionId] = {};
+    })
+  }
 
   terminate(contract, options={}) {
     const bubblePath = this.rootPath+contract;
@@ -156,6 +199,32 @@ export class TrivialDataServer extends DataServer {
       if (options.silent && err.code === ErrorCodes.BUBBLE_SERVER_ERROR_BUBBLE_DOES_NOT_EXIST) return undefined;
       else throw err;
     })
+  }
+
+  _notifySubscribers(path, contract, file, event, data, type) {
+    const promise = (event === 'delete') ? Promise.resolve({name: file, type: type}) : getFileStats(path, file);
+    return promise
+      .then(stats => {
+        this.subscriptions.forEach((sub, i) => {
+          if (sub.contract === contract && sub.file === file) {
+            sub.listener({
+              subscriptionId: i,
+              event: event,
+              file: stats,
+              data: event === 'delete' || sub.options.list ? undefined : data
+            })
+          }
+        })
+        return stats;
+      })
+      .then(stats => {
+        if (file !== ROOT_PATH) {
+          const bubblePath = this.rootPath+contract;
+          const permissionedPart = new BubbleFilename(file).getPermissionedPart();
+          if (permissionedPart === file) return this._notifySubscribers(bubblePath, contract, ROOT_PATH, 'update', [{event: event, ...stats}]);
+          else return this._notifySubscribers(bubblePath+'/'+permissionedPart, contract, permissionedPart, 'update', [{event: event, ...stats}]);
+        }
+      })
   }
 
 }
@@ -272,5 +341,28 @@ function filterFileList(fileList, options) {
     return details;
   });
   
+}
+
+
+function getFileStats(path, file, options={}) { 
+  return fs.stat(path)
+  .then(stats => {
+    if (stats.isDirectory()) return fs.readdir(path).then(files => { stats.size = files.length; return stats })
+    else return stats;
+  })
+  .then(stats => {
+    return {
+      name: file, 
+      type: stats.isDirectory() ? 'dir' : 'file',
+      created: Math.trunc(stats.birthtimeMs),
+      modified: Math.trunc(stats.mtimeMs),
+      length: stats.size
+    };
+  })
+  .catch(err => {
+    if (err.code === 'ENOENT') return {name: file}
+    if (err instanceof BubbleError) throw err;
+    throw new BubbleError(INTERNAL_ERROR, "failed to stat file or directory - try again later", {cause: err.message || err});
+  });
 }
 

@@ -7,7 +7,8 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const CONFIG = require('../config.json');
-import { BubbleServer } from "./server.js";
+import { BubbleServer as HttpBubbleServer} from "./http-server.js";
+import { BubbleServer as WebsocketBubbleServer } from "./ws-server.js";
 
 console.trace = CONFIG.traceOn ? Function.prototype.bind.call(console.info, console, "[trace]") : function() {};
 console.debug = CONFIG.debugOn ? Function.prototype.bind.call(console.info, console, "[debug]") : function() {};
@@ -17,7 +18,7 @@ main();
 
 async function main() {
   try {
-    const server = new BubbleServer(CONFIG);
+    const server = CONFIG.protocol === 'ws:' ? new WebsocketBubbleServer(CONFIG) : new HttpBubbleServer(CONFIG);
 
     process.on('SIGTERM', () => {
       server.close();

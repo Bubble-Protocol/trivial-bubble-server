@@ -5,12 +5,12 @@
 */
 
 import Web3 from 'web3';
-import { BubbleServer } from '../src/server.js';
+import { BubbleServer } from '../src/http-server.js';
 import { GanacheServer } from "./GanacheServer.js";
 import * as fs from 'node:fs/promises';
 import { v2ServerTests } from './v2/v2-server-tests.js';
 
-describe("Server", function() {
+describe("HTTP Server", function() {
 
   //
   // Config
@@ -35,6 +35,7 @@ describe("Server", function() {
   const BUBBLE_SERVER_CONFIG = {
     version: '1',
     port: SERVER_PORT,
+    hostname: "vault.bubbleprotocol.com",
     https: {
       active: false,
       key: '',
@@ -44,7 +45,6 @@ describe("Server", function() {
       "chains": [
         {
           endpoint: "ethereum",
-          url: BLOCKCHAIN_SERVER_URL,
           chainId: CHAIN_ID,
           rootPath: V2_SERVER_BUBBLE_PATH,
           web3Url: BLOCKCHAIN_SERVER_URL
@@ -99,7 +99,7 @@ describe("Server", function() {
     await fs.rmdir(SERVER_BUBBLE_PATH, {recursive: true, force: true});
   }, 20000);
 
-  
+
   const chain = BUBBLE_SERVER_CONFIG.v2.chains[0];
   const serverURL = BUBBLE_SERVER_URL+'/v2/'+chain.endpoint;
   v2ServerTests(web3, serverURL, chain);

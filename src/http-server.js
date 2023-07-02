@@ -24,7 +24,7 @@ export class BubbleServer {
     framework.use(jsonParser.json({limit: '50mb'}));
 
     CONFIG.v2.chains.forEach(chain => {
-      framework.post('/v2/'+chain.endpoint, jayson.server(RPCv2(chain)).middleware());
+      framework.post('/v2/'+chain.endpoint, jayson.server(RPCv2(chain, CONFIG.hostname).methods).middleware());
     })
 
     if (CONFIG.https && CONFIG.https.active) {
