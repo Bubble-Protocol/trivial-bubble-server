@@ -8,7 +8,7 @@ import * as fs from 'node:fs/promises';
 import { testBubbleServerRequirements } from '@bubble-protocol/server/test/BubbleServerTestSuite/requirementsTests.js';
 import { bubbleProviders } from '@bubble-protocol/client';
 
-export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG) {
+export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG, options={}) {
 
   describe("v2", function() {
 
@@ -29,7 +29,7 @@ export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG) {
       await expect(bubbleProvider.post('ping')).resolves.toBe('pong');
     })
 
-    testBubbleServerRequirements(web3, CONFIG.chainId, BUBBLE_SERVER_URL, bubbleProvider, undefined, {noSubscriptions: true});
+    testBubbleServerRequirements(web3, CONFIG.chainId, BUBBLE_SERVER_URL, bubbleProvider, undefined, {noSubscriptions: true, ...options});
   
   });
   

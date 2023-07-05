@@ -29,6 +29,7 @@ export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG, options) {
         bubbleProvider.on('error', reject)
         bubbleProvider.on('open', resolve)
       })
+      bubbleProvider.on('error', error => console.error('ws provider rxd error:', error))
       await fs.mkdir(CONFIG.rootPath, {recursive: true});
     });
   

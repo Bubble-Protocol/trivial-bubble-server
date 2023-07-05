@@ -6,6 +6,7 @@
 
 import Web3 from 'web3';
 import { BubbleServer } from '../src/ws-server.js';
+import { BubbleServer as HttpBubbleServer } from '../src/http-server.js';
 import { GanacheServer } from "./GanacheServer.js";
 import * as fs from 'node:fs/promises';
 import { v2ServerTests } from './v2/ws-v2-server-tests.js';
@@ -67,7 +68,7 @@ describe("Websocket Server", function() {
   // Global vars
   //
 
-  var testBubbleServer;
+  var testBubbleServer, httpServer;
 
 
   //
@@ -92,18 +93,25 @@ describe("Websocket Server", function() {
  
   beforeAll( async () => {
     await fs.mkdir(SERVER_BUBBLE_PATH, {recursive: true});
-    testBubbleServer = new BubbleServer(BUBBLE_SERVER_CONFIG);
+    httpServer = new HttpBubbleServer(BUBBLE_SERVER_CONFIG, {subscriptions: true});
+    testBubbleServer = new BubbleServer(BUBBLE_SERVER_CONFIG, httpServer);
     return startBlockchain(GANACHE_PORT, {mnemonic: GANACHE_MNEMONIC})
-      .then(testBubbleServer.start.bind(testBubbleServer))
+      .then(httpServer.start.bind(httpServer))
+      .then(status => {
+        expect(status.port).toBe(SERVER_PORT);
+        expect(status.type).toBe('http');
+        return testBubbleServer.start();
+      })
       .then(status => {
         expect(status.port).toBe(SERVER_PORT);
         expect(status.type).toBe('ws');
       })
-    }, 20000);
+  }, 20000);
 
 
   afterAll( async () => {
     testBubbleServer.close();
+    httpServer.close();
     stopBlockchain();
     await fs.rmdir(SERVER_BUBBLE_PATH, {recursive: true, force: true});
   }, 20000);

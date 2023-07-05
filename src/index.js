@@ -18,17 +18,20 @@ main();
 
 async function main() {
   try {
-    const server = CONFIG.protocol === 'ws:' ? new WebsocketBubbleServer(CONFIG) : new HttpBubbleServer(CONFIG);
+    const httpServer = new HttpBubbleServer(CONFIG);
+    const wsServer = new WebsocketBubbleServer(CONFIG, httpServer);
 
     process.on('SIGTERM', () => {
-      server.close();
+      httpServer.close();
+      wsServer.close();
     });
 
     process.on('SIGINT', () => {
-      server.close();
+      httpServer.close();
+      wsServer.close();
     });
 
-    server.start()
+    httpServer.start()
       .then(status => {
         console.log(status.type, 'server running on port', status.port);
       })

@@ -4,44 +4,20 @@
  * http://www.opensource.org/licenses/mit-license.php.
  */
 
-import { RPCv2 } from './v2/rpc-server.js';
 import WebSocketServer from 'ws';
 
 export class BubbleServer {
 
-  constructor(CONFIG) {
-    console.log('Bubble Server v'+CONFIG.version);
+  constructor(CONFIG, httpServer) {
 
     this.port = CONFIG.port;
-
-    //
-    // construct the endpoints for this server
-    //
-
-    function promisifyRPCMethod(endpoint) {
-      return function(params, listener) {
-        return new Promise((resolve, reject) => {
-          endpoint(params, (error, response) => { if (error) reject(error); else resolve(response) }, listener);
-        });
-      }
-    }
-    
-    this.endpoints = {};
-
-    CONFIG.v2.chains.forEach(chain => {
-      const path = '/v2/'+chain.endpoint;
-      this.endpoints[path] = RPCv2(chain, CONFIG.hostname, {subscriptions: true});
-      for (const method in this.endpoints[path].methods) {
-        this.endpoints[path].methods[method] = promisifyRPCMethod(this.endpoints[path].methods[method]);
-      }
-    })
-
+    this.endpoints = httpServer.endpoints;
 
     //
     // construct the server
     //
 
-    this.wsServer = new WebSocketServer.Server({ port: this.port });
+    this.wsServer = new WebSocketServer.Server({ server: httpServer });
 
     this.wsServer.on('connection', (ws, req) => {
 
@@ -101,15 +77,16 @@ export class BubbleServer {
   serviceValidRequest(ws, method, params) {
     const endpoint = this.endpoints[ws.bubbleServer.endpoint].methods[method]; 
     if (!endpoint) return Promise.reject({code: -32601, message: 'unknown method: '+method})
+    const endpointPromise = promisifyRPCMethod(endpoint);
     switch(method) {
       case 'subscribe':
-        return endpoint(params, (msg) => this.notifySubscriber(ws, msg))
+        return endpointPromise(params, (msg) => this.notifySubscriber(ws, msg))
           .then(subscription => {
             ws.bubbleServer.subscriptions.push(subscription.subscriptionId);
             return subscription;
           })
       default:
-        return endpoint(params);
+        return endpointPromise(params);
     }
     
   }
@@ -134,3 +111,13 @@ export class BubbleServer {
   }
 
 }
+
+
+function promisifyRPCMethod(endpoint) {
+  return function(params, listener) {
+    return new Promise((resolve, reject) => {
+      endpoint(params, (error, response) => { if (error) reject(error); else resolve(response) }, listener);
+    });
+  }
+}
+
