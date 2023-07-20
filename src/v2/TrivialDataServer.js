@@ -167,8 +167,8 @@ export class TrivialDataServer extends DataServer {
         this.subscriptions.push({contract, file, listener, options});
         const id = this.subscriptions.length-1;
         if (stats.type) {
-          if (options.list === true) return this.list(contract, file, {long: true}).then(list => { return {subscriptionId: id, file: stats, data: list} });
           if (options.since) return this.list(contract, file, {long: true, after: options.since}).then(list => { return {subscriptionId: id, file: stats, data: list} });
+          if (options.list === true) return this.list(contract, file, {long: true}).then(list => { return {subscriptionId: id, file: stats, data: list} });
           if (options.read) return this.read(contract, file).then(data => { return {subscriptionId: id, file: stats, data: data} });
         }
         return {subscriptionId: id, file: stats};
