@@ -2,11 +2,15 @@ import { blockchainProviders } from "@bubble-protocol/core";
 import { Guardian } from "@bubble-protocol/server";
 import { TrivialDataServer } from "./TrivialDataServer.js";
 import Web3 from "web3";
+import { ThrottledWeb3Provider } from "./ThrottledWeb3Provider.js";
 
 export function RPCv2(CONFIG, endpointPrefix, hostname, options={}) {
 
   const web3 = new Web3(CONFIG.web3Url);
-  const blockchainProvider = new blockchainProviders.Web3Provider(CONFIG.chainId, web3, '0.0.2');
+  
+  const blockchainProvider = CONFIG.throttling
+    ? new ThrottledWeb3Provider(CONFIG.chainId, web3, '0.0.2', CONFIG.throttling.maxRequests, CONFIG.throttling.window)
+    : new blockchainProviders.Web3Provider(CONFIG.chainId, web3, '0.0.2');
 
   const dataServer = new TrivialDataServer(CONFIG.rootPath);
 
