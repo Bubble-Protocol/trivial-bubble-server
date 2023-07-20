@@ -18,7 +18,7 @@ main();
 
 async function main() {
   try {
-    const httpServer = new HttpBubbleServer(CONFIG);
+    const httpServer = new HttpBubbleServer(CONFIG, {subscriptions: true});
     const wsServer = new WebsocketBubbleServer(CONFIG, httpServer);
 
     process.on('SIGTERM', () => {
