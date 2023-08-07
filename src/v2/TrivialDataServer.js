@@ -17,6 +17,13 @@ export class TrivialDataServer extends DataServer {
     super();
     this.rootPath = rootPath.slice(-1) === '/' ? rootPath : rootPath + '/';
     this.subscriptions = [];
+    this.logStatus = this.logStatus.bind(this);
+    this.logStatus();
+  }
+
+  logStatus() {
+    console.debug(this.rootPath, 'subscription size:', this.subscriptions.length);
+    setTimeout(this.logStatus, 4*3600*1000);
   }
 
   create(contract, options={}) {
@@ -156,6 +163,7 @@ export class TrivialDataServer extends DataServer {
   }
 
   subscribe(contract, file, listener, options={}) {
+    console.debug(this.rootPath, 'subscribe', contract, file, this.subscriptions.length);
     const bubblePath = this.rootPath+contract;
     const isRoot = file === ROOT_PATH;
     const path = isRoot ? bubblePath : bubblePath+'/'+file
@@ -167,7 +175,7 @@ export class TrivialDataServer extends DataServer {
         this.subscriptions.push({contract, file, listener, options});
         const id = this.subscriptions.length-1;
         if (stats.type) {
-          if (options.since) return this.list(contract, file, {long: true, after: options.since}).then(list => { return {subscriptionId: id, file: stats, data: list} });
+          if (options.since !== undefined) return this.list(contract, file, {long: true, after: options.since}).then(list => { return {subscriptionId: id, file: stats, data: list} });
           if (options.list === true) return this.list(contract, file, {long: true}).then(list => { return {subscriptionId: id, file: stats, data: list} });
           if (options.read) return this.read(contract, file).then(data => { return {subscriptionId: id, file: stats, data: data} });
         }
@@ -181,6 +189,7 @@ export class TrivialDataServer extends DataServer {
   }
 
   unsubscribeClient(subs) {
+    console.debug(this.rootPath, 'unsubscribeClient', subs);
     subs.forEach(subscriptionId => {
       if (typeof subscriptionId === 'number' && subscriptionId >= 0 && subscriptionId < this.subscriptions.length) this.subscriptions[subscriptionId] = {};
     })
@@ -211,7 +220,7 @@ export class TrivialDataServer extends DataServer {
               subscriptionId: i,
               event: event,
               file: stats,
-              data: event === 'delete' || sub.options.list ? undefined : data
+              data: event === 'delete' || (type === 'file' && sub.options.list) ? undefined : data
             })
           }
         })
