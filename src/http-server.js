@@ -23,6 +23,12 @@ export class BubbleServer {
     const app = express();
     app.use(jsonParser.json({limit: '50mb'}));
 
+    // Optional: serve a static homepage from the 'public' directory
+    app.use(express.static('public'));
+    app.get('/', (_, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    });
+
     this.endpoints = {};
 
     CONFIG.v2.chains.forEach(chain => {
