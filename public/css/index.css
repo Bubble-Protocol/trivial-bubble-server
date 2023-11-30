@@ -67,8 +67,8 @@ h3 {
 .hero-title {
   font-style: normal;
   font-weight: 400;
-  font-size: 3vw;
-  line-height: 3.8vw;
+  font-size: 48px;
+  line-height: 56px;
   text-align: left;
   color: #BEC9C7;
   flex: 0 1 auto;
@@ -84,8 +84,7 @@ h3 {
 .hero-subtitle {
   font-style: normal;
   font-weight: 400;
-  font-size: 1.5vw;
-  line-height: 2vw;
+  font-size: 28px;
   text-align: left;
   color: #BEC9C7;
   flex: 0 1 auto;
@@ -133,7 +132,14 @@ h3 {
   border: 0.5px solid #BEC9C7;
 }
 
+.chains-image {
+  max-width: 96%;
+}
 
+.fixed-width-scrollframe {
+  width: 100%;
+  overflow: scroll;
+}
 
 .table {
   display: flex;
@@ -186,9 +192,11 @@ h3 {
 .code-block {
   display: flex;
   padding: 16px;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 10px;
   border: 1px solid var(--mid-contrast, #686666);
+  font-size: 14px;
+  overflow: scroll;
 }
 
 pre {
@@ -196,8 +204,15 @@ pre {
 }
 
 @media screen and (max-width: 1135px) {
-  .section {
+
+  .page-width-content {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .section, .section-left {
     padding: 16px;
   }
+
 }
 
