@@ -3,6 +3,7 @@ import { Guardian } from "@bubble-protocol/server";
 import { TrivialDataServer } from "./TrivialDataServer.js";
 import Web3 from "web3";
 import { ThrottledWeb3Provider } from "./ThrottledWeb3Provider.js";
+import { Wallet } from "./wallet.js";
 
 export function RPCv2(CONFIG, endpointPrefix, hostname, options={}) {
 
@@ -29,7 +30,7 @@ export function RPCv2(CONFIG, endpointPrefix, hostname, options={}) {
     }
   }
 
-  const methods = {
+  let methods = {
     ping: (_, callback) => { callback(null, 'pong') },
     create: makeMethod('create'),
     write: makeMethod('write'),
@@ -45,6 +46,11 @@ export function RPCv2(CONFIG, endpointPrefix, hostname, options={}) {
   if (options.subscriptions) {
     methods.subscribe = makeMethod('subscribe');
     methods.unsubscribe = makeMethod('unsubscribe');
+  }
+
+  if (CONFIG.wallet) {
+    const wallet = new Wallet(blockchainProvider, CONFIG.wallet);
+    methods = {...methods, ...wallet.getRpcMethods()}
   }
 
   return {
