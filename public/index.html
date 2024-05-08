@@ -19,7 +19,10 @@
     <link rel="stylesheet" type="text/css" href="css/index.css" />
     <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
-    <!-- <script type="application/javascript">fetch('https://vault.bubbleprotocol.com:8125/anonymousCount?page=bubble-private-cloud-index')</script> -->
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <script src="js/index.js"></script>
 </head>
 <body id="home">
 
@@ -44,7 +47,13 @@
         <div class="page-width-content">
             <div class="section">
                 <h1>Supported Chains</h1>
-                <img class="chains-image" src="images/chains.png">
+                <div class="carousel">
+                    <div class="slide"><img src="images/logo-ethereum.png" alt="Ethereum"></div>
+                    <div class="slide"><img src="images/logo-polygon.png" alt="Polygon"></div>
+                    <div class="slide"><img src="images/logo-avalanche.png" alt="Avalanche"></div>
+                    <div class="slide"><img src="images/logo-base.png" alt="Base"></div>
+                    <div class="slide"><img src="images/logo-5ire.png" alt="5ire"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -120,6 +129,14 @@
                                 <img class="icon" src="images/icons/copy.svg" onclick="copyToClipboard('https://vault.bubbleprotocol.com/v2/base-goerli')">
                             </div>
                         </div>
+                        <div class="row">
+                            <span class="chain-column">5ire Thunder</span>
+                            <span class="chain-id-column">977</span>
+                            <div class="url-column">
+                                <span>https://vault.bubbleprotocol.com/v2/5ire-thunder</span>
+                                <img class="icon" src="images/icons/copy.svg" onclick="copyToClipboard('https://vault.bubbleprotocol.com/v2/5ire-thunder')">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -155,6 +172,7 @@
         }
     </script>
 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 </body>
 </html>
 
