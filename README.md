@@ -108,17 +108,14 @@ The base directory path where bubble storage directories will be created if not 
   }
 }
 ```
-## Usage
+
+## Install dependencies (excluding development dependencies)
 ```
 npm install --omit=dev
+```
+## Start the Bubble server
+```
 npm start
-```
-
-## Test
-### To run test
-```
-npm install --include=dev 
-npm test
 ```
 
 # Bubble Server Tests
@@ -152,3 +149,13 @@ The following test scripts provide comprehensive validation of the server’s `D
 ---
 
 Each test script is designed to verify a specific access method, offering thorough, protocol-specific validation of the Bubble server’s compliance and robustness.
+
+## Test
+### Install all dependencies, including development dependencies
+```
+npm install --include=dev
+```
+#### Run the test suite
+```
+npm test
+```
