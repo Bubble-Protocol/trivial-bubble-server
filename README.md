@@ -67,7 +67,7 @@ The base directory path where bubble storage directories will be created if not 
         "endpoint": "base-goerli",
         "chainId": 84531,
         "rootPath": "./bubbles/base-goerli",
-        "web3Url": "https://goerli.infura.io/v3/YOUR_INFURA_PROJECT_ID", //
+        "web3Url": "https://goerli.infura.io/v3/YOUR_INFURA_PROJECT_ID",
         "throttling": {
           "maxRequests": 25,
           "window": 1000
