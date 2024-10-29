@@ -19,7 +19,7 @@ This simple implementation stores bubbles as directories on the server's local f
 Requires access to an EVM-compatible blockchain via either a Web3 api service such as [Infura](https://www.infura.io/), a local blockchain node or a local [Ganache](https://trufflesuite.com/ganache/) instance. Setup your Infura api or local Ganache.
 
 
-# Bubble Server Configuration
+# Bubble Server Installation
 
 Use `config.json` to specify the server port and each chain's chain id, blockchain api, endpoint and bubble storage directory.
 
@@ -33,17 +33,15 @@ The main server port that your Bubble server will listen on, such as `3000`.
 ### Chains (`chains`)
 Define each blockchain network with the following options:
 
-- **name**: A friendly name for each blockchain network (e.g., "Ethereum Mainnet", "Goerli Testnet", "Ganache Local").
-- **chainId**: The unique chain ID for the blockchain network (e.g., `1` for Ethereum mainnet, `5` for Goerli testnet, `1337` for a local Ganache network).
+- **endpoint**: The endpoint path for this blockchain, used for routing requests (e.g., `ethereum`).
+- **chainId**: The unique chain ID for the blockchain network (e.g., `1` for Ethereum mainnet, `1337` for a local Ganache network).
 - **web3Url**: The URL for the Web3 provider:
   - For Infura or another Web3 API provider, use the respective URL with an API key (e.g., `https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID`).
   - For a local Ethereum node, use its RPC endpoint (e.g., `http://localhost:8545`).
   - For a local Ganache instance, use `http://127.0.0.1:8545`.
-- **endpoint**: The endpoint path for this blockchain, used for routing requests (e.g., `/eth-mainnet`).
-- **storageDirectory**: The path for local storage of bubbles on this blockchain network.
-
-### Root Path (`rootPath`)
-The base directory path where bubble storage directories will be created if not specified explicitly under each chain's `storageDirectory`.
+- **rootPath**: The path for local storage of bubbles on this blockchain network.
+### Throttling (`throttling`) Optional
+Manage request rates to protect against abuse and API rate limits.
 
 ---
 
@@ -51,61 +49,56 @@ The base directory path where bubble storage directories will be created if not 
 
 ```json
 {
-  "version": "0.2.0",
-  "port": 3000,
-  "hostname": "localhost",
-  "https": {
-    "active": false,
-    "key": "<PATH_TO_PRIVATE_KEY>",
-    "cer": "<PATH_TO_CERTIFICATE>"
-  },
-  "debugOn": false,
-  "traceOn": true,
-  "v2": {
-    "chains": [
-      {
-        "endpoint": "base-goerli",
-        "chainId": 84531,
-        "rootPath": "./bubbles/base-goerli",
-        "web3Url": "https://goerli.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+    "version": "0.2.0",
+    "port": 3000,
+    "hostname": "localhost",
+    "https": {
+        "active": false,
+        "key": "<PATH_TO_PRIVATE_KEY>",
+        "cer": "<PATH_TO_CERTIFICATE>"
+    },
+    "debugOn": false,
+    "traceOn": true,
+    "v2": {
+        "chains": [
+            {
+                "endpoint": "ethereum",
+                "chainId": 1,
+                "rootPath": "./bubbles/ethereum",
+                "web3Url": "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"
+            },
+            {
+                "endpoint": "polygon",
+                "chainId": 137,
+                "rootPath": "./bubbles/polygon",
+                "web3Url": "https://polygon-amoy.infura.io/v3/YOUR_INFURA_PROJECT_ID"
+            },
+            {
+                "endpoint": "avalanche",
+                "chainId": 43114,
+                "rootPath": "./bubbles/avalanche",
+                "web3Url": "https://avalanche-fuji.infura.io/v3/YOUR_INFURA_PROJECT_ID"
+            },
+            {
+                "endpoint": "sepolia",
+                "chainId": 11155111,
+                "rootPath": "./bubbles/sepolia",
+                "web3Url": "https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID"
+            },
+            {
+                "endpoint": "ganache",
+                "chainId": 1337,
+                "web3Url": "http://127.0.0.1:8545",
+                "endpoint": "/ganache",
+                "rootPath": "./storage/ganache"
+            }
+        ],
         "throttling": {
-          "maxRequests": 25,
-          "window": 1000
-        }
-      },
-      {
-        "endpoint": "ethereum",
-        "chainId": 1,
-        "rootPath": "./bubbles/ethereum",
-        "web3Url": "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"
-      },
-      {
-        "endpoint": "polygon",
-        "chainId": 137,
-        "rootPath": "./bubbles/polygon",
-        "web3Url": "https://polygon-amoy.infura.io/v3/YOUR_INFURA_PROJECT_ID"
-      },
-      {
-        "endpoint": "avalanche",
-        "chainId": 43114,
-        "rootPath": "./bubbles/avalanche",
-        "web3Url": "https://avalanche-fuji.infura.io/v3/YOUR_INFURA_PROJECT_ID"
-      },
-      {
-        "endpoint": "sepolia",
-        "chainId": 11155111,
-        "rootPath": "./bubbles/sepolia",
-        "web3Url": "https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID"
-      },
-      {
-        "name": "Local Ganache",
-      "chainId": 1337,
-      "web3Url": "http://127.0.0.1:8545",
-      "endpoint": "/ganache",
-      "storageDirectory": "./storage/ganache"
+            "enabled": true,
+            "maxRequests": 10,
+            "window": 1000
+        },
     }
-    ]
-  }
 }
 ```
 

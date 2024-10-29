@@ -12,16 +12,6 @@
   "v2": {
     "chains": [
       {
-        "endpoint": "base-goerli",
-        "chainId": 84531,
-        "rootPath": "./bubbles/base-goerli",
-        "web3Url": "<YOUR_WEB3_PROVIDER_URL>",
-        "throttling": {
-          "maxRequests": 25,
-          "window": 1000
-        }
-      },
-      {
         "endpoint": "ethereum",
         "chainId": 1,
         "rootPath": "./bubbles/ethereum",
