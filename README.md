@@ -89,7 +89,6 @@ Manage request rates to protect against abuse and API rate limits.
                 "endpoint": "ganache",
                 "chainId": 1337,
                 "web3Url": "http://127.0.0.1:8545",
-                "endpoint": "/ganache",
                 "rootPath": "./storage/ganache"
             }
         ],
