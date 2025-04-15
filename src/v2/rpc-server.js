@@ -9,7 +9,7 @@ export function RPCv2(CONFIG, endpointPrefix, hostname, options={}) {
 
   const web3 = new Web3(CONFIG.web3Url);
   
-  const blockchainProvider = CONFIG.throttling
+  const blockchainProvider = CONFIG.throttling !== undefined
     ? new ThrottledWeb3Provider(CONFIG.chainId, web3, '0.0.2', CONFIG.throttling.maxRequests, CONFIG.throttling.window)
     : new blockchainProviders.Web3Provider(CONFIG.chainId, web3, '0.0.2');
 

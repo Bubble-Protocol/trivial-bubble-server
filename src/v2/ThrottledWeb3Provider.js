@@ -10,6 +10,8 @@ export class ThrottledWeb3Provider extends blockchainProviders.Web3Provider {
     super(chainId, web3, abiVersion);
     this.requestQueue = [];
     this.requestPeriod = (windowTime && maxWindowRequests) ? Math.ceil(windowTime / maxWindowRequests) : 0;
+    this.requestCount = 0;
+    this.maxWindowRequests = maxWindowRequests;
     this.stats = {
       maxQueueSize: 0,
       maxQueueSizeLast24h: 0,
@@ -18,24 +20,40 @@ export class ThrottledWeb3Provider extends blockchainProviders.Web3Provider {
         count: 0,
       }
     }
+    this._serviceQueue = this._serviceQueue.bind(this);
     this._sendNext = this._sendNext.bind(this);
     this._monitorStats = this._monitorStats.bind(this);
     this._outputStats = this._outputStats.bind(this);
     this.monitorTimer = setTimeout(this._monitorStats, STATS_MONITOR_PERIOD);
     this.outputMonitorTimer = setTimeout(this._outputStats, STATS_MONITOR_OUTPUT_PERIOD);
+    this._serviceQueue();
   }
 
   async getPermissions(contract, account, file) {
     if (this.requestPeriod === 0) return super.getPermissions(contract, account, file);
     return new Promise((resolve, reject) => {
       const request = () => super.getPermissions(contract, account, file).then(resolve).catch(reject);
-      this.requestQueue.push(request);
-      if (this.requestQueue.length === 1) {
+      if (this.requestCount < this.maxWindowRequests) {
         request();
-        setTimeout(this._sendNext, this.requestPeriod);
+        if (this.requestCount == 0) setTimeout(this._serviceQueue, this.requestPeriod);
+        this.requestCount++;
+      }
+      else {
+        this.requestQueue.push(request);
       }
       this._updateStats();
     })
+  }
+
+  _serviceQueue() {
+    if (this.requestCount > 0) this.requestCount--;
+    if (this.requestCount > 0) setTimeout(this._serviceQueue, this.requestPeriod);
+    if (this.requestQueue.length > 0) {
+      this.requestQueue[0]();
+      this.requestQueue = this.requestQueue.slice(1);
+      if (this.requestCount == 0) setTimeout(this._serviceQueue, this.requestPeriod);
+      this.requestCount++;
+    }
   }
 
   _sendNext() {
