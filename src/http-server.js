@@ -11,6 +11,7 @@ import http from 'http';
 import https from 'https';
 import { RPCv2 } from './v2/rpc-server.js';
 import fs from 'fs';
+//import morgan from 'morgan';
 
 export class BubbleServer {
 
@@ -21,6 +22,17 @@ export class BubbleServer {
     this.port = CONFIG.port;
 
     const app = express();
+/*    app.use(morgan('combined'));
+    app.use((req, res, next) => {
+  console.log('--- Incoming Request ---');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2)); // Pretty-print headers
+  console.log('Query Parameters:', JSON.stringify(req.query, null, 2)); // Pretty-print query params
+  console.log('Body:', JSON.stringify(req.body, null, 2)); // Pretty-print body
+  console.log('--- End of Request ---\n');
+  next();
+});  */
     app.use(jsonParser.json({limit: '50mb'}));
 
     // Optional: serve a static homepage from the 'public' directory
@@ -34,7 +46,8 @@ export class BubbleServer {
     CONFIG.v2.chains.forEach(chain => {
       const endpoint = '/v2/'+chain.endpoint;
       this.endpoints[endpoint] = RPCv2(chain, '/v2/', CONFIG.hostname, options);
-      app.post(endpoint, jayson.server(this.endpoints[endpoint].methods).middleware());
+      const server = jayson.server(this.endpoints[endpoint].methods).middleware();
+      app.post(endpoint, server);
     })
 
     if (CONFIG.https && CONFIG.https.active) {
