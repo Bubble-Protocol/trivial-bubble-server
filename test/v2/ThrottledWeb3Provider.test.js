@@ -2,7 +2,7 @@ import { ThrottledWeb3Provider } from '../../src/v2/ThrottledWeb3Provider.js';
 import { blockchainProviders } from '@bubble-protocol/server';
 
 
-describe.only('ThrottledWebServer', () => {
+describe('ThrottledWebServer', () => {
 
   const runner = {
     call: () => Promise.resolve('0x0000000000000000000000000000000000000000000000000000000000000000'),

@@ -96,8 +96,10 @@ describe("Websocket Server", function() {
     httpServer = new HttpBubbleServer(BUBBLE_SERVER_CONFIG, {subscriptions: true});
     testBubbleServer = new BubbleServer(BUBBLE_SERVER_CONFIG, httpServer);
     return startBlockchain(GANACHE_PORT, {mnemonic: GANACHE_MNEMONIC})
+      .then(() => console.log('Blockchain server started'))
       .then(httpServer.start.bind(httpServer))
       .then(status => {
+        console.log('HTTP server started on port '+status.port+' with '+status.type);
         expect(status.port).toBe(SERVER_PORT);
         expect(status.type).toBe('http');
         return testBubbleServer.start();

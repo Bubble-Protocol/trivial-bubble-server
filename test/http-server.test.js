@@ -85,8 +85,10 @@ describe("HTTP Server", function() {
     await fs.mkdir(SERVER_BUBBLE_PATH, {recursive: true});
     testBubbleServer = new BubbleServer(BUBBLE_SERVER_CONFIG);
     return startBlockchain(GANACHE_PORT, {mnemonic: GANACHE_MNEMONIC})
+      .then(() => console.log('Blockchain server started'))
       .then(testBubbleServer.start.bind(testBubbleServer))
       .then(status => {
+        console.log('Bubble server started on port '+status.port+' with '+status.type);
         expect(status.port).toBe(SERVER_PORT);
         expect(status.type).toBe('http');
       })
