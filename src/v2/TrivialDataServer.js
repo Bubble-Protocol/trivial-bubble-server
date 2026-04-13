@@ -22,7 +22,7 @@ export class TrivialDataServer extends DataServer {
   }
 
   logStatus() {
-    console.debug(this.rootPath, 'subscription size:', this.subscriptions.length);
+    console.log(this.rootPath, 'subscription size:', this.subscriptions.length);
     setTimeout(this.logStatus, 4*3600*1000);
   }
 
@@ -48,7 +48,7 @@ export class TrivialDataServer extends DataServer {
       return fs.mkdir(dirname(path), {recursive: true})
       .then(() => fs.writeFile(path, data))
       .then(() => {
-        this._notifySubscribers(path, contract, file, 'write', data);
+        this._notifySubscribers(path, contract, file, 'write', data, 'file');
       })
       .catch(err => {
         throw new BubbleError(INTERNAL_ERROR, "failed to write file - try again later", {cause: err.message || err});
@@ -65,7 +65,7 @@ export class TrivialDataServer extends DataServer {
         return fs.mkdir(dirname(path), {recursive: true})
         .then(() => fs.appendFile(path, data))
         .then(() => {
-          this._notifySubscribers(path, contract, file, 'append', data);
+          this._notifySubscribers(path, contract, file, 'append', data, 'file');
         })
         .catch(err => {
           throw new BubbleError(INTERNAL_ERROR, "failed to append file - try again later", {cause: err.message || err});
@@ -163,7 +163,6 @@ export class TrivialDataServer extends DataServer {
   }
 
   subscribe(contract, file, listener, options={}) {
-    console.debug(this.rootPath, 'subscribe', contract, file, this.subscriptions.length);
     const bubblePath = this.rootPath+contract;
     const isRoot = file === ROOT_PATH;
     const path = isRoot ? bubblePath : bubblePath+'/'+file
@@ -189,7 +188,6 @@ export class TrivialDataServer extends DataServer {
   }
 
   unsubscribeClient(subs) {
-    console.debug(this.rootPath, 'unsubscribeClient', subs);
     subs.forEach(subscriptionId => {
       if (typeof subscriptionId === 'number' && subscriptionId >= 0 && subscriptionId < this.subscriptions.length) this.subscriptions[subscriptionId] = {};
     })

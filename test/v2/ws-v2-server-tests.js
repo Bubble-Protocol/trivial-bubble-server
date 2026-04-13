@@ -26,10 +26,15 @@ export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG, options) {
     beforeAll( async () => {
       await new Promise((resolve, reject) => {
         bubbleProvider = new bubbleProviders.WebsocketBubbleProvider(new URL(BUBBLE_SERVER_URL));
+        bubbleProvider.open();
         bubbleProvider.on('error', reject)
         bubbleProvider.on('open', resolve)
       })
-      bubbleProvider.on('error', error => console.error('ws provider rxd error:', error))
+      .then(() => console.log('Provider connected to bubble server at '+BUBBLE_SERVER_URL))
+      .catch(err => {
+        console.error("Error connecting provider to bubble server at "+BUBBLE_SERVER_URL, err);
+        throw err;
+      });
       await fs.mkdir(CONFIG.rootPath, {recursive: true});
     });
   
