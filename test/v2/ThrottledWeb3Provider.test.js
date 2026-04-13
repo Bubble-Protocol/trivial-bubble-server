@@ -1,34 +1,32 @@
 import { ThrottledWeb3Provider } from '../../src/v2/ThrottledWeb3Provider.js';
-import { blockchainProviders } from '@bubble-protocol/core';
+import { blockchainProviders } from '@bubble-protocol/server';
 
 
 describe.only('ThrottledWebServer', () => {
 
-  class Contract {
-    methods = {
-      getAccessPermissions: () => { return {call: () => Promise.resolve(0)} }
+  const runner = {
+    call: () => Promise.resolve('0x0000000000000000000000000000000000000000000000000000000000000000'),
+    provider: {
+      getNetwork: async () => ({ chainId: 1 })
     }
   }
 
-  const web3Mock = {
-    eth: {
-      Contract: Contract
-    }
-  }
+  const address = '0x0000000000000000000000000000000000000001';
+  const file = '0x0000000000000000000000000000000000000000000000000000000000000002';
 
-  const uut = new ThrottledWeb3Provider(1, web3Mock, '0.0.2', 25, 1000);
+  const uut = new ThrottledWeb3Provider('1.0', 1, runner, '', 25, 1000);
 
   afterAll(() => {
     uut.close();
   })
 
-  test('[defensive test] sending 100 messages through Web3Provider takes much less than 4s', async () => {
+  test('[defensive test] sending 100 messages through EVMProvider takes much less than 4s', async () => {
 
-    const web3Provider = new blockchainProviders.Web3Provider(1, web3Mock, '0.0.2');
+    const evmProvider = new blockchainProviders.EVMProvider('1.0', 1, runner, '');
 
     const promises = [];
     for(let i=0; i<100; i++) {
-      promises.push(web3Provider.getPermissions());
+      promises.push(evmProvider.getPermissions(address, address, file));
     }
 
     const startTime = Date.now();
@@ -46,7 +44,7 @@ describe.only('ThrottledWebServer', () => {
 
     const promises = [];
     for(let i=0; i<100; i++) {
-      promises.push(uut.getPermissions());
+      promises.push(uut.getPermissions(address, address, file));
     }
 
     const startTime = Date.now();

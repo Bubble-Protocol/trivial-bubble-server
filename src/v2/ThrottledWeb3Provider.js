@@ -1,13 +1,13 @@
-import { blockchainProviders } from '@bubble-protocol/core';
+import { blockchainProviders } from '@bubble-protocol/server';
 
 const STATS_MONITOR_PERIOD = 1*60*1000;
 const STATS_MONITOR_OUTPUT_PERIOD = 24*60*60*1000;
 const STATS_RUNAWAY_CONSECUTIVE_QUEUE_INCREASE_THRESHOLD = 5;
 
-export class ThrottledWeb3Provider extends blockchainProviders.Web3Provider {
+export class ThrottledWeb3Provider extends blockchainProviders.EVMProvider {
 
-  constructor(chainId, web3, abiVersion, maxWindowRequests, windowTime) {
-    super(chainId, web3, abiVersion);
+  constructor(protocolVersion, chainId, provider, hostDomain, maxWindowRequests, windowTime) {
+    super(protocolVersion, chainId, provider, hostDomain);
     this.requestQueue = [];
     this.requestPeriod = (windowTime && maxWindowRequests) ? Math.ceil(windowTime / maxWindowRequests) : 0;
     this.requestCount = 0;
@@ -34,9 +34,9 @@ export class ThrottledWeb3Provider extends blockchainProviders.Web3Provider {
     return new Promise((resolve, reject) => {
       const request = () => super.getPermissions(contract, account, file).then(resolve).catch(reject);
       if (this.requestCount < this.maxWindowRequests) {
-        request();
-        if (this.requestCount == 0) setTimeout(this._serviceQueue, this.requestPeriod);
-        this.requestCount++;
+	request();
+	if (this.requestCount == 0) setTimeout(this._serviceQueue, this.requestPeriod);
+	this.requestCount++;
       }
       else {
         this.requestQueue.push(request);

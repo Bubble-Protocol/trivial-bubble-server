@@ -1,24 +1,23 @@
-import { blockchainProviders } from "@bubble-protocol/core";
-import { Guardian } from "@bubble-protocol/server";
+import { Guardian, blockchainProviders } from "@bubble-protocol/server";
 import { TrivialDataServer } from "./TrivialDataServer.js";
-import Web3 from "web3";
 import { ThrottledWeb3Provider } from "./ThrottledWeb3Provider.js";
 import { Wallet } from "./wallet.js";
+import { JsonRpcProvider } from 'ethers';
 
 export function RPCv2(CONFIG, endpointPrefix, hostname, options={}) {
 
-  const web3 = new Web3(CONFIG.web3Url);
-  
+  const contractProvider = new JsonRpcProvider(CONFIG.web3Url);
+	
   const blockchainProvider = CONFIG.throttling !== undefined
-    ? new ThrottledWeb3Provider(CONFIG.chainId, web3, '0.0.2', CONFIG.throttling.maxRequests, CONFIG.throttling.window)
-    : new blockchainProviders.Web3Provider(CONFIG.chainId, web3, '0.0.2');
+    ? new ThrottledWeb3Provider('1.0', CONFIG.chainId, contractProvider, hostname, CONFIG.throttling.maxRequests, CONFIG.throttling.window)
+    : new blockchainProviders.EVMProvider('1.0', CONFIG.chainId, contractProvider, hostname);
 
   const dataServer = new TrivialDataServer(CONFIG.rootPath);
 
-  const guardian = new Guardian(dataServer, blockchainProvider, hostname);
+  const guardian = new Guardian(dataServer, blockchainProvider);
 
   function makeMethod(method) {
-    return function(params, callback, subscriptionListener) { 
+    return function(params, callback, subscriptionListener) {
       guardian.post(method, params, subscriptionListener)
       .then(response => {
         callback(null, response);
