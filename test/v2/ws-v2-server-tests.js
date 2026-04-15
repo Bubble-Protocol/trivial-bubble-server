@@ -6,8 +6,7 @@
 
 import * as fs from 'node:fs/promises';
 import { testBubbleServerRequirements } from '@bubble-protocol/server/test/BubbleServerTestSuite/requirementsTests.js';
-import { BubbleProvider } from '@bubble-protocol/core';
-import { bubbleProviders } from '@bubble-protocol/client';
+import { BubbleProvider, bubbleProviders } from '@bubble-protocol/client';
 
 export function v2ServerTests(web3, BUBBLE_SERVER_URL, CONFIG, options) {
 

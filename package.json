@@ -29,8 +29,7 @@
   },
   "homepage": "https://github.com/Bubble-Protocol/trivial-bubble-server",
   "dependencies": {
-    "@bubble-protocol/core": "^0.0.16",
-    "@bubble-protocol/server": "^1.0.6",
+    "@bubble-protocol/server": "^1.0.7",
     "body-parser": "^1.20.2",
     "jayson": "^4.1.0",
     "morgan": "^1.10.0",

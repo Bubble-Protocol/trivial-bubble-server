@@ -5,8 +5,7 @@
 import http from 'http';
 import * as fs from 'node:fs/promises';
 import { createRequire } from 'module';
-import { ROOT_PATH } from '@bubble-protocol/core';
-import { bubbleProviders } from '@bubble-protocol/client';
+import { bubbleProviders, ROOT_PATH } from '@bubble-protocol/client';
 import { TestContract } from '@bubble-protocol/server/test/BubbleServerTestSuite/TestContract.js';
 
 

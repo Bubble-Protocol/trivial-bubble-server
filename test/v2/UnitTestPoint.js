@@ -1,4 +1,4 @@
-import { BubbleError, ErrorCodes } from '@bubble-protocol/core';
+import { BubbleError, ErrorCodes } from '@bubble-protocol/server';
 import { TestPoint } from '@bubble-protocol/server/test/DataServerTestSuite/TestPoint';
 import { exec } from 'node:child_process';
 import * as fs from 'node:fs/promises';

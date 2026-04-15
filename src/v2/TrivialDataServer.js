@@ -1,6 +1,4 @@
-import { BubbleError, BubbleFilename, ErrorCodes } from '@bubble-protocol/core';
-import { ROOT_PATH } from '@bubble-protocol/core/src/index.js';
-import { DataServer } from '@bubble-protocol/server';
+import { DataServer, BubbleError, BubbleFilename, ErrorCodes, ROOT_PATH } from '@bubble-protocol/server';
 import * as fs from 'node:fs/promises';
 
 const INTERNAL_ERROR = -32040;
