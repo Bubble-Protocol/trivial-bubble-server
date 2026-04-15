@@ -77,7 +77,18 @@ export class BubbleServer {
   }
 
   close(callback) {
-    this.server.close(callback);
+    const closePromise = Promise.resolve()
+      .then(() => {
+        Object.values(this.endpoints).forEach((endpoint) => endpoint.close?.());
+      })
+      .then(() => new Promise((resolve, reject) => {
+        this.server.close((error) => {
+          if (error) reject(error);
+          else resolve();
+        });
+      }));
+    if (callback) closePromise.then(() => callback()).catch(callback);
+    return closePromise;
   }
 
 }

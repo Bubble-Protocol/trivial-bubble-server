@@ -10,6 +10,7 @@ import { BubbleServer as HttpBubbleServer } from '../src/http-server.js';
 import { GanacheServer } from "./GanacheServer.js";
 import * as fs from 'node:fs/promises';
 import { v2ServerTests } from './v2/ws-v2-server-tests.js';
+import { notificationTests } from './v2/notification-tests.js';
 
 describe("Websocket Server", function() {
 
@@ -86,6 +87,15 @@ describe("Websocket Server", function() {
     return new Promise(resolve => ganacheServer.close(resolve));
   }
 
+  function closeServer(server) {
+    return new Promise((resolve, reject) => {
+      server.close(error => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+  }
+
 
   //
   // Tests
@@ -112,9 +122,9 @@ describe("Websocket Server", function() {
 
 
   afterAll( async () => {
-    testBubbleServer.close();
-    httpServer.close();
-    stopBlockchain();
+    await closeServer(testBubbleServer);
+    await closeServer(httpServer);
+    await stopBlockchain();
     await fs.rmdir(SERVER_BUBBLE_PATH, {recursive: true, force: true});
   }, 20000);
 
@@ -122,5 +132,8 @@ describe("Websocket Server", function() {
   const chainConfig = BUBBLE_SERVER_CONFIG.v2.chains[0];
   const serverURL = BUBBLE_SERVER_URL+'/v2/'+chainConfig.endpoint;
   v2ServerTests(web3, serverURL, chainConfig, options);
+  notificationTests(web3, serverURL, chainConfig, {
+    providerUrl: `http://${BUBBLE_SERVER_CONFIG.hostname}/v2/${chainConfig.endpoint}`
+  });
 
 });
